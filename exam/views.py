@@ -568,6 +568,7 @@ class StudentExamView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         context['attempts_made'] = exam.get_student_attempts(student)
         context['remaining_attempts'] = exam.get_remaining_attempts(student)
         context['max_attempts'] = exam.max_attempts
+        context['exam_status'] = exam.get_status_for_student(student)
         
         # Check for ongoing submission
         ongoing_submission = exam.submissions.filter(
