@@ -1,8 +1,11 @@
 from django import forms
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
+from django import forms
 from django.utils import timezone
-
 from .models import Exam
+
+User = get_user_model()
 
 class ExamForm(forms.ModelForm):
     class Meta:

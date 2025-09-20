@@ -48,7 +48,10 @@ class CustomLogoutView(RedirectView):
             user_name = request.user.get_full_name() or request.user.email
             logout(request)
             messages.success(request, f'You have been successfully signed out. See you later, {user_name}!')
-        
+            return redirect('authentication:signin')
+        else:
+            return redirect('exam:dashboard')
+
         return super().get(request, *args, **kwargs)
     
     def post(self, request, *args, **kwargs):
@@ -109,6 +112,7 @@ class TeacherProfileView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
             
             # Basic exam stats
             total_attempts = exam_submissions.count()
+            allocated_time_minutes = exam.duration_minutes
             
             if total_attempts > 0:
                 # Pass/fail analysis
@@ -127,8 +131,7 @@ class TeacherProfileView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
                 avg_time_taken = exam_submissions.aggregate(
                     avg_time=Avg('time_taken')
                 )['avg_time']
-                
-                allocated_time_minutes = exam.duration_minutes
+
                 avg_time_minutes = 0
                 time_efficiency = 0
                 
@@ -202,7 +205,7 @@ class StudentProfileView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     def test_func(self):
         return self.request.user.user_type == 'student'
     
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, total_exams_taken=None, **kwargs):
         context = super().get_context_data(**kwargs)
         student = self.request.user
         
@@ -211,7 +214,9 @@ class StudentProfileView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
             student=student,
             is_completed=True
         ).select_related('exam').order_by('-submitted_at')
-        
+
+        total_exams_taken = all_submissions.count()
+
         # Calculate average score
         if total_exams_taken > 0:
             avg_score = all_submissions.aggregate(

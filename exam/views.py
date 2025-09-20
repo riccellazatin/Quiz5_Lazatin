@@ -33,7 +33,7 @@ class DashboardView(LoginRequiredMixin, ListView):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('authentication:signin')
-        
+
         if request.user.is_teacher:
             return TeacherDashboardView.as_view()(request, *args, **kwargs)
         elif request.user.is_student:
@@ -219,6 +219,9 @@ class ExamCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Exam
     form_class = ExamForm
     template_name = 'exam/create_exam.html'
+
+    def test_func(self):
+        return self.request.user.is_teacher
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
